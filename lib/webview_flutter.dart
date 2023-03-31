@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -12,8 +11,9 @@ class Sungaipenuhkota extends StatefulWidget {
 }
 
 class _SungaipenuhkotaState extends State<Sungaipenuhkota> {
-  final Completer<WebViewController> _controller =
-      Completer<WebViewController>();
+  late WebViewController webViewController;
+  double progress = 0;
+
   @override
   void initState() {
     super.initState();
@@ -24,31 +24,43 @@ class _SungaipenuhkotaState extends State<Sungaipenuhkota> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: WebView(
-          initialUrl: 'https://sungaipenuhkota.go.id',
-          javascriptMode: JavascriptMode.unrestricted,
-          onWebViewCreated: (WebViewController webViewController) {
-            _controller.complete(webViewController);
-          },
-          onProgress: (int progress) {
-            print("WebView is loading (progress : $progress%)");
-          },
-          navigationDelegate: (NavigationRequest request) {
-            if (request.url.startsWith('https://www.youtube.com/')) {
-              print('blocking navigation to $request}');
-              return NavigationDecision.prevent;
+        child: WillPopScope(
+          onWillPop: () async {
+            if (await webViewController.canGoBack()) {
+              await webViewController.goBack();
+              return false;
+            } else {
+              return true;
             }
-            print('allowing navigation to $request');
-            return NavigationDecision.navigate;
           },
-          onPageStarted: (String url) {
-            print('Page started loading: $url');
-          },
-          onPageFinished: (String url) {
-            print('Page finished loading: $url');
-          },
-          gestureNavigationEnabled: true,
-          geolocationEnabled: false, //support geolocation or not
+          child: Column(
+            children: [
+              progress < 1
+                  ? SizedBox(
+                      height: 5,
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        color: Colors.red,
+                        backgroundColor: Colors.white,
+                      ),
+                    )
+                  : const SizedBox(),
+              Expanded(
+                child: WebView(
+                  initialUrl: 'https://sungaipenuhkota.go.id',
+                  javascriptMode: JavascriptMode.unrestricted,
+                  onWebViewCreated: (controller) {
+                    webViewController = controller;
+                  },
+                  onProgress: (progress) => setState(() {
+                    this.progress = progress / 100;
+                  }),
+                  gestureNavigationEnabled: true,
+                  geolocationEnabled: false, //support geolocation or not
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

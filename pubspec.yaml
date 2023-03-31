@@ -31,8 +31,14 @@ dependencies:
     sdk: flutter
   flutter_webview_pro: ^3.0.1+4
   flutter_launcher_icons: ^0.10.0
+  flutter_native_splash: ^2.2.3
   rename: ^2.0.1
 
+# flutter pub run flutter_native_splash:create
+flutter_native_splash:
+  color: "#ffffff"
+  image: img/splash.png
+  
 # flutter pub run flutter_launcher_icons:main
 flutter_icons:
   android: true
